@@ -36,45 +36,6 @@ const createItem = (req, res) => {
     });
 };
 
-const updateItem = (req, res) => {
-  const { name, weather, imageUrl } = req.body;
-
-  ClothingItem.findByIdAndUpdate(
-    req.params.itemId,
-    { name, weather, imageUrl },
-    { new: true, runValidators: true }
-  )
-    .orFail(() => {
-      const error = new Error("Item ID not found");
-      error.statusCode = ERROR_CODES.NOT_FOUND;
-      throw error;
-    })
-    .then((item) => res.send(item))
-    .catch((err) => {
-      console.error(
-        `Error ${err.name} with the message ${err.message} has occurred while executing the code`
-      );
-      if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid item ID" });
-      }
-      if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid item data" });
-      }
-      if (err.statusCode === ERROR_CODES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "Item ID not found" });
-      }
-      res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
-    });
-};
-
 const deleteItem = (req, res) => {
   ClothingItem.findByIdAndDelete(req.params.itemId)
     .orFail(() => {
