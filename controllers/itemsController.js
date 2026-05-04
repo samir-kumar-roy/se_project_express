@@ -131,7 +131,6 @@ const unlikeItem = (req, res) => {
 module.exports = {
   getItems,
   createItem,
-  updateItem,
   deleteItem,
   likeItem,
   unlikeItem,
