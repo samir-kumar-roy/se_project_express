@@ -4,11 +4,12 @@ const ERROR_CODES = require("../utils/errors");
 const getUsers = (req, res) => {
   User.find({})
     .then((users) => res.send(users))
-    .catch(() =>
+    .catch((err) => {
+      console.error(err);
       res
         .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." })
-    );
+        .send({ message: "An error has occurred on the server." });
+    });
 };
 
 const getUserById = (req, res) => {
@@ -20,6 +21,7 @@ const getUserById = (req, res) => {
     })
     .then((user) => res.send(user))
     .catch((err) => {
+      console.error(err);
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
@@ -36,7 +38,7 @@ const getUserById = (req, res) => {
     });
 };
 
-function createUser(req, res) {
+const createUser = (req, res) =>{
   const { name, avatar } = req.body;
 
   if (!name || !avatar) {
@@ -46,6 +48,7 @@ function createUser(req, res) {
   User.create({ name, avatar })
     .then((user) => res.status(201).send(user))
     .catch((err) => {
+      console.error(err);
       if (err.name === "ValidationError") {
         res.status(ERROR_CODES.BAD_REQUEST).send({ message: "Invalid data" });
       } else {
