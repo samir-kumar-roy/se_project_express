@@ -17,7 +17,7 @@ const createItem = (req, res) => {
   const { name, weather, imageUrl } = req.body;
 
   ClothingItem.create({ name, weather, imageUrl, owner })
-    .then((item) => res.status(201).send(item))
+    .then((item) => res.status(ERROR_CODES.CREATED).send(item))
     .catch((err) => {
       console.error(err);
       if (err.name === "ValidationError") {
@@ -32,9 +32,18 @@ const createItem = (req, res) => {
 };
 
 const deleteItem = (req, res) => {
-  ClothingItem.findByIdAndDelete(req.params.itemId)
+  ClothingItem.findById(req.params.itemId)
     .orFail()
-    .then(() => res.send({ message: "Item deleted successfully" }))
+    .then((item) => {
+      if (item.owner.toString() !== req.user._id) {
+        return res
+          .status(ERROR_CODES.FORBIDDEN)
+          .send({ message: "You do not have permission to delete this item" });
+      }
+      return ClothingItem.findByIdAndDelete(req.params.itemId).then(() =>
+        res.send({ message: "Item deleted successfully" })
+      );
+    })
     .catch((err) => {
       console.error(err);
       if (err.name === "CastError") {

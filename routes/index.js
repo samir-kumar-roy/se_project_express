@@ -5,6 +5,14 @@ const ERROR_CODES = require("../utils/errors");
 const usersRouter = require("./users");
 const itemsRouter = require("./items");
 
+// Import controllers
+const { login } = require("../controllers/users");
+const { createUser } = require("../controllers/userController");
+
+// Auth routes
+router.post("/signin", login);
+router.post("/signup", createUser);
+
 // Use route modules
 router.use("/users", usersRouter);
 router.use("/items", itemsRouter);
