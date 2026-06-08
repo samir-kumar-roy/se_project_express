@@ -1,5 +1,5 @@
-const User = require("../models/user");
 const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const ERROR_CODES = require("../utils/errors");
 
@@ -7,7 +7,9 @@ const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(ERROR_CODES.BAD_REQUEST).send({ message: "Email and password are required" });
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: "Email and password are required" });
   }
 
   return User.findUserByCredentials(email, password)
@@ -18,11 +20,18 @@ const login = (req, res) => {
 
       return res.send({ token });
     })
-    .catch(() => {
-      res.status(401).send({ message: "Incorrect email or password" });
+    .catch((err) => {
+      if (err.message === "Incorrect email or password") {
+        return res
+          .status(ERROR_CODES.UNAUTHORIZED)
+          .send({ message: "Incorrect email or password" });
+      }
+      return res
+        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
+        .send({ message: "An error has occurred on the server." });
     });
 };
-getCurrentUser = (req, res) => {
+const getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .orFail(() => {
       const error = new Error("User not found");
@@ -31,7 +40,6 @@ getCurrentUser = (req, res) => {
     })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
@@ -63,7 +71,6 @@ const updateProfile = (req, res) => {
     })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.error(err);
       if (err.name === "CastError") {
         return res
           .status(ERROR_CODES.BAD_REQUEST)
@@ -89,19 +96,22 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!name || !avatar || !email || !password) {
-    return res.status(ERROR_CODES.BAD_REQUEST).send({ message: "Invalid data" });
-    return;
+    return res
+      .status(ERROR_CODES.BAD_REQUEST)
+      .send({ message: "Invalid data" });
   }
 
-  User.create({ name, avatar, email, password })
+  return User.create({ name, avatar, email, password })
     .then((user) => {
-      delete user.password;
-      res.status(ERROR_CODES.CREATED).send(user);
+      const userObj = user.toObject();
+      delete userObj.password;
+      res.status(ERROR_CODES.CREATED).send(userObj);
     })
     .catch((err) => {
-      console.error(err);
       if (err.code === 11000) {
-        res.status(ERROR_CODES.CONFLICT).send({ message: "Email already exists" });
+        res
+          .status(ERROR_CODES.CONFLICT)
+          .send({ message: "Email already exists" });
       } else if (err.name === "ValidationError") {
         res.status(ERROR_CODES.BAD_REQUEST).send({ message: "Invalid data" });
       } else {

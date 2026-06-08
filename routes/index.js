@@ -6,8 +6,7 @@ const usersRouter = require("./users");
 const itemsRouter = require("./items");
 
 // Import controllers
-const { login } = require("../controllers/users");
-const { createUser } = require("../controllers/userController");
+const { createUser, login } = require("../controllers/userController");
 
 // Auth routes
 router.post("/signin", login);
