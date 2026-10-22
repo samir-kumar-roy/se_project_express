@@ -16,7 +16,12 @@ app.use(cors());
 app.use(express.json());
 // Request logging middleware
 app.use(requestLogger);
-
+// only for code review purposes, removing this part later
+app.get('/crash-test', () => {
+  setTimeout(() => {
+    throw new Error('Server will crash now');
+  }, 0);
+});
 // Routes
 app.use(routers);
 // centralized Error handling middleware
