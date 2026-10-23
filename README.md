@@ -19,7 +19,7 @@ User can create a profile, add a garment, like / unlike it even delete its own.
 ## Project Pitch Video
 
 Watch the project pitch here:
-- [WTWR Project Pitch](https://drive.google.com/file/d/1-D-UCxz3PVsNs_i4xaV-STPNbO1mXWY2/view?usp=drive_link)
+- [WTWR Project Pitch](https://www.loom.com/share/55d285e0703247a095963794c2b7a380)
 
 ## Tech Stack
 
