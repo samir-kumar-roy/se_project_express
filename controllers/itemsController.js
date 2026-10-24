@@ -1,13 +1,12 @@
 const ClothingItem = require("../models/clothingItem");
 const ERROR_CODES = require("../utils/errors");
+const InternalServerError  = require("../errors/internal-server-error");
 
-const getItems = (req, res) => {
+const getItems = (req, res,next) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
     .catch(() =>
-      res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." })
+      next(new InternalServerError("An error has occurred on the server."))
     );
 };
 
