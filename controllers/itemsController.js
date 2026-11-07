@@ -1,6 +1,9 @@
 const ClothingItem = require("../models/clothingItem");
 const ERROR_CODES = require("../utils/errors");
 const InternalServerError  = require("../errors/internal-server-error");
+const UnauthorizedError = require("../errors/unauthorized-error");
+const BadRequestError = require("../errors/bad-request-error");
+const NotFoundError = require("../errors/not-found-error");
 
 const getItems = (req, res,next) => {
   ClothingItem.find({})
@@ -18,13 +21,9 @@ const createItem = (req, res) => {
     .then((item) => res.status(ERROR_CODES.CREATED).send(item))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 
@@ -33,9 +32,7 @@ const deleteItem = (req, res) => {
     .orFail()
     .then((item) => {
       if (item.owner.toString() !== req.user._id) {
-        return res
-          .status(ERROR_CODES.FORBIDDEN)
-          .send({ message: "You do not have permission to delete this item" });
+        return Promise.reject(new UnauthorizedError("You do not have permission to delete this item"));
       }
       return ClothingItem.findByIdAndDelete(req.params.itemId).then(() =>
         res.send({ message: "Item deleted successfully" })
@@ -43,18 +40,12 @@ const deleteItem = (req, res) => {
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "Item not found" });
+        return Promise.reject(new NotFoundError('Item not found'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 
@@ -68,18 +59,12 @@ const likeItem = (req, res) => {
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "Item not found" });
+        return Promise.reject(new NotFoundError('Item not found'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 
@@ -93,18 +78,12 @@ const unlikeItem = (req, res) => {
     .then((item) => res.send(item))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
       if (err.name === "DocumentNotFoundError") {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "Item not found" });
+        return Promise.reject(new NotFoundError('Item not found'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 

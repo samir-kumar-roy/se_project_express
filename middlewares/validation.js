@@ -49,6 +49,18 @@ const validateAuth = celebrate({
   }),
 });
 
+const validateLogin = celebrate({
+  [Segments.BODY]: Joi.object().keys({
+    email: Joi.string().required().email().messages({
+      "string.empty": 'The "email" field must be filled in',
+      "string.email": 'the "email" field must be a valid email address',
+    }),
+    password: Joi.string().required().messages({
+      "string.empty": 'The "password" field must be filled in',
+    }),
+  }),
+});
+
 const validateId = celebrate({
   [Segments.PARAMS]: Joi.object().keys({
     itemId: Joi.string().hex().length(24),
@@ -60,5 +72,6 @@ module.exports = {
   validateCardBody,
   validateUserBody,
   validateAuth,
+  validateLogin,
   validateId,
 };

@@ -2,14 +2,16 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const { JWT_SECRET } = require("../utils/config");
 const ERROR_CODES = require("../utils/errors");
+const UnauthorizedError = require("../errors/unauthorized-error");
+const BadRequestError = require("../errors/bad-request-error");
+const NotFoundError = require("../errors/not-found-error");
+const ConflictError = require("../errors/conflict-error");
 
 const login = (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res
-      .status(ERROR_CODES.BAD_REQUEST)
-      .send({ message: "Email and password are required" });
+    return Promise.reject(new BadRequestError('Email and password are required'));
   }
 
   return User.findUserByCredentials(email, password)
@@ -22,37 +24,25 @@ const login = (req, res) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect email or password") {
-        return res
-          .status(ERROR_CODES.UNAUTHORIZED)
-          .send({ message: "Incorrect email or password" });
+        return Promise.reject(new UnauthorizedError('Incorrect email or password'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new Error('An error has occurred on the server.'));
     });
 };
 const getCurrentUser = (req, res) => {
   User.findById(req.user._id)
     .orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = ERROR_CODES.NOT_FOUND;
-      throw error;
+      throw new NotFoundError('User not found');
     })
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
       if (err.statusCode === ERROR_CODES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "User not found" });
+        return Promise.reject(new NotFoundError('User not found'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new Error('An error has occurred on the server.'));
     });
 };
 
@@ -64,31 +54,19 @@ const updateProfile = (req, res) => {
     { name, avatar },
     { new: true, runValidators: true }
   )
-    .orFail(() => {
-      const error = new Error("User not found");
-      error.statusCode = ERROR_CODES.NOT_FOUND;
-      throw error;
-    })
+    .orFail(() => Promise.reject(new NotFoundError('User not found')))
     .then((user) => res.send(user))
     .catch((err) => {
       if (err.name === "CastError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
       if (err.statusCode === ERROR_CODES.NOT_FOUND) {
-        return res
-          .status(ERROR_CODES.NOT_FOUND)
-          .send({ message: "User not found" });
+        return Promise.reject(new NotFoundError('User not found'));
       }
       if (err.name === "ValidationError") {
-        return res
-          .status(ERROR_CODES.BAD_REQUEST)
-          .send({ message: "Invalid data" });
+        return Promise.reject(new BadRequestError('Invalid data'));
       }
-      return res
-        .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-        .send({ message: "An error has occurred on the server." });
+      return Promise.reject(new Error('An error has occurred on the server.'));
     });
 };
 
@@ -96,9 +74,7 @@ const createUser = (req, res) => {
   const { name, avatar, email, password } = req.body;
 
   if (!name || !avatar || !email || !password) {
-    return res
-      .status(ERROR_CODES.BAD_REQUEST)
-      .send({ message: "Invalid data" });
+    return Promise.reject(new BadRequestError('Email and password are required'));
   }
 
   return User.create({ name, avatar, email, password })
@@ -109,16 +85,12 @@ const createUser = (req, res) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        res
-          .status(ERROR_CODES.CONFLICT)
-          .send({ message: "Email already exists" });
-      } else if (err.name === "ValidationError") {
-        res.status(ERROR_CODES.BAD_REQUEST).send({ message: "Invalid data" });
-      } else {
-        res
-          .status(ERROR_CODES.INTERNAL_SERVER_ERROR)
-          .send({ message: "An error has occurred on the server." });
+        return Promise.reject(new ConflictError('Email already exists'));
       }
+      if (err.name === "ValidationError") {
+        return Promise.reject(new BadRequestError('Invalid data'));
+      }
+      return Promise.reject(new Error('An error has occurred on the server.'));
     });
 };
 

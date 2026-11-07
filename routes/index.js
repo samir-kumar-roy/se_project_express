@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const ERROR_CODES = require("../utils/errors");
+const NotFoundError = require("../errors/not-found-error");
 
 // Import route modules
 const usersRouter = require("./users");
@@ -8,19 +8,18 @@ const itemsRouter = require("./items");
 // Import controllers
 const { createUser, login } = require("../controllers/userController");
 
+// Import validation middleware
+const { validateLogin, validateUserBody } = require("../middlewares/validation");
+
 // Auth routes
-router.post("/signin", login);
-router.post("/signup", createUser);
+router.post("/signin", validateLogin, login);
+router.post("/signup", validateUserBody, createUser);
 
 // Use route modules
 router.use("/users", usersRouter);
 router.use("/items", itemsRouter);
 
 // Handle non-existent resources (404)
-router.use((req, res) => {
-  res
-    .status(ERROR_CODES.NOT_FOUND)
-    .send({ message: "Requested resource not found" });
-});
+router.use(() => Promise.reject(new NotFoundError('Requested resource not found')));
 
 module.exports = router;
