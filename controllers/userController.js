@@ -6,6 +6,7 @@ const UnauthorizedError = require("../errors/unauthorized-error");
 const BadRequestError = require("../errors/bad-request-error");
 const NotFoundError = require("../errors/not-found-error");
 const ConflictError = require("../errors/conflict-error");
+const InternalServerError = require("../errors/internal-server-error");
 
 const login = (req, res) => {
   const { email, password } = req.body;
@@ -26,7 +27,7 @@ const login = (req, res) => {
       if (err.message === "Incorrect email or password") {
         return Promise.reject(new UnauthorizedError('Incorrect email or password'));
       }
-      return Promise.reject(new Error('An error has occurred on the server.'));
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 const getCurrentUser = (req, res) => {
@@ -42,7 +43,7 @@ const getCurrentUser = (req, res) => {
       if (err.statusCode === ERROR_CODES.NOT_FOUND) {
         return Promise.reject(new NotFoundError('User not found'));
       }
-      return Promise.reject(new Error('An error has occurred on the server.'));
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 
@@ -66,7 +67,7 @@ const updateProfile = (req, res) => {
       if (err.name === "ValidationError") {
         return Promise.reject(new BadRequestError('Invalid data'));
       }
-      return Promise.reject(new Error('An error has occurred on the server.'));
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 
@@ -90,7 +91,7 @@ const createUser = (req, res) => {
       if (err.name === "ValidationError") {
         return Promise.reject(new BadRequestError('Invalid data'));
       }
-      return Promise.reject(new Error('An error has occurred on the server.'));
+      return Promise.reject(new InternalServerError("An error has occurred on the server."));
     });
 };
 

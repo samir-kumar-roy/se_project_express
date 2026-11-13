@@ -8,9 +8,7 @@ const NotFoundError = require("../errors/not-found-error");
 const getItems = (req, res,next) => {
   ClothingItem.find({})
     .then((items) => res.send(items))
-    .catch(() =>
-      next(new InternalServerError("An error has occurred on the server."))
-    );
+    .catch((err) =>next(err));
 };
 
 const createItem = (req, res) => {
